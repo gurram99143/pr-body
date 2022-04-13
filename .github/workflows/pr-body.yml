@@ -1,36 +1,17 @@
-name: Pull Request Check
 on:
   issue_comment:
-    types: [created]
-  
-#pull_request_target:
+    types: [created, deleted, edited]
+    
 
 jobs:
-  check-body-length:
+  main:
+    #if: ${{ github.event.issue.pull_request  && github.event.comment.body == '/merge' }}
     runs-on: ubuntu-latest
     steps:
-      - name: check
+      - name: Merge-PR
+        #run: gh pr merge $PR_NUMBER --merge
         env:
-          PRNUM: ${{ github.event.pull_request.number }}
-          PRBODY: ${{ github.event.pull_request.body }}
-          TESTBODY: ${{ github.event.inputs.body }}
-          TEST: ${{ github.event.inputs.test }}
-        run: |
-          if [ "$TEST" = "true" ]
-          then
-            PRBODY=$TESTBODY
-          fi
-
-          commentPR () {
-            if [ "$TEST" = "true" ]
-            then
-              echo "would comment: '${1}'"
-            else
-              gh pr comment $PRNUM -b "${1}"
-            fi
-          }
-
-          if [ "$PRBODY" = "" ]
-          then
-            commentPR "Thanks! Please add a body so we can better review your contribution."
-          fi
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          #PR_NUMBER: ${{ github.event.issue.html_url }}
+		run: |
+		  curl https://api.github.com/repos/:owner/:repo/pulls/:1 | jq '.body'
